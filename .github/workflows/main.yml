@@ -17,13 +17,12 @@ jobs:
 
     - name: Download Tailscale Portable
       run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale_1.66.4_windows_amd64.zip -OutFile tailscale.zip
-        Expand-Archive -Path tailscale.zip -DestinationPath tailscale_files -Force
+        Invoke-WebRequest -Uri https://github.com/tailscale/tailscale/releases/latest/download/tailscale-ipn.exe -OutFile tailscale.exe
 
     - name: Run Tailscale & Show IP
       run: |
-        .\tailscale_files\tailscale.exe up --authkey tskey-auth-kTt7RyRZKq11CNTRL-nFKdJYqaM7WnLRVCTgwF7WztqkTm9tjQ9
-        .\tailscale_files\tailscale.exe ip -4
+        .\tailscale.exe up --authkey tskey-auth-kTt7RyRZKq11CNTRL-nFKdJYqaM7WnLRVCTgwF7WztqkTm9tjQ9
+        .\tailscale.exe ip -4
 
     - name: Keep Session Alive
       run: while ($true) { Start-Sleep -Seconds 60 }
