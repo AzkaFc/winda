@@ -1,0 +1,29 @@
+name: Windows RDP with Tailscale Portable
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Setup Password
+      run: net user runneradmin Gant1Passw0rd!123
+
+    - name: Enable RDP
+      run: |
+        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+    - name: Download Tailscale Portable
+      run: |
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
+        Expand-Archive -Path tailscale.exe -DestinationPath tailscale_files -Force
+
+    - name: Run Tailscale & Show IP
+      run: |
+        .\tailscale_files\tailscale.exe up --authkey tskey-auth-kTt7RyRZKq11CNTRL-nFKdJYqaM7WnLRVCTgwF7WztqkTm9tjQ9
+        .\tailscale_files\tailscale.exe ip -4
+
+    - name: Keep Session Alive
+      run: while ($true) { Start-Sleep -Seconds 60 }
