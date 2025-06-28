@@ -7,7 +7,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Set Password
-        run: net user runneradmin RdpS3cur3!
+        run: net user runneradmin Unixs@rtmed!4
 
       - name: Enable RDP
         run: |
@@ -24,7 +24,7 @@ jobs:
 
       - name: Start LocalTunnel
         run: |
-          lt --port 3389 --subdomain myrdpaccess > tunnel.log 2>&1 &
+          lt --port 3389 --subdomain rdpadhy > tunnel.log 2>&1 &
           Start-Sleep -Seconds 10
           Get-Content tunnel.log
 
