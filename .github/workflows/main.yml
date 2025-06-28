@@ -15,14 +15,16 @@ jobs:
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Install Remote.it Agent
+    - name: Download & Install Remote.it Agent
       run: |
         Invoke-WebRequest -Uri https://downloads.remote.it/agent/windows/remoteit-agent-latest.exe -OutFile remoteit.exe
-        Start-Process .\remoteit.exe -ArgumentList "/S" -Wait
+        Start-Process remoteit.exe -ArgumentList "/VERYSILENT /NORESTART" -Wait
+        Start-Sleep -Seconds 10
 
     - name: Register Device to Remote.it
       run: |
         $code = "ISI_DENGAN_DEVICE_REGISTRATION_CODE"
-        & "C:\Program Files\remoteit\remoteit.exe" register -c $code --name "GitHub-RDP" --service rdp --port 3389
+        & "C:\Program Files (x86)\remoteit\remoteit.exe" register --code $code --name "Github-RDP" --service rdp --port 3389
 
-    - name: Keep Session
+    - name: Keep Session Alive
+      run: while ($true) { Start-Sleep -Seconds 60 }
