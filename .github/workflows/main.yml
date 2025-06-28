@@ -1,32 +1,24 @@
-name: Windows RDP LocalTunnel
+name: RDP Windows LocalTunnel
 
 on: workflow_dispatch
 
 jobs:
-  rdp:
+  build:
     runs-on: windows-latest
+
     steps:
-      - name: Set Password
-        run: net user runneradmin Unixs@rtmed!4
+    - name: Install LocalTunnel
+      run: |
+        Invoke-WebRequest -Uri https://github.com/localtunnel/localtunnel/releases/latest/download/lt-windows.exe -OutFile lt.exe
 
-      - name: Enable RDP
-        run: |
-          Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    - name: Start RDP & LocalTunnel
+      run: |
+        net user runneradmin /add
+        net localgroup administrators runneradmin /add
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Install NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+        Start-Process -FilePath "lt.exe" -ArgumentList "--port 3389 --subdomain tesremote" -NoNewWindow
 
-      - name: Install LocalTunnel
-        run: npm install -g localtunnel
-
-      - name: Start LocalTunnel
-        run: |
-          lt --port 3389 --subdomain rdpadhy > tunnel.log 2>&1 &
-          Start-Sleep -Seconds 10
-          Get-Content tunnel.log
-
-      - name: Keep Runner Alive
-        run: while ($true) { Start-Sleep -Seconds 60 }
+    - name: Keep Alive
+      run: ping 127.0.0.1 -t
