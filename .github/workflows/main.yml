@@ -1,4 +1,4 @@
-name: Windows RDP LocalTunnel
+name: RDP Windows via LocalTunnel
 
 on: workflow_dispatch
 
@@ -7,20 +7,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Install Node.js + LocalTunnel
+    - name: Install Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
 
-    - name: Install LocalTunnel & Start Tunnel
+    - name: Setup LocalTunnel & Enable RDP
       run: |
         npm install -g localtunnel
         net user runneradmin RdpS3cur3!
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        start /B cmd /c "lt --port 3389 --subdomain tesremote > tunnel.log"
-        timeout /t 10
-        type tunnel.log
+        Start-Process "cmd.exe" -ArgumentList "/c lt --port 3389 --subdomain tesremote > tunnel.log"
+        Start-Sleep -Seconds 10
+        Get-Content tunnel.log
 
-    - name: Keep Alive
+    - name: Keep Session Alive
       run: ping 127.0.0.1 -t
