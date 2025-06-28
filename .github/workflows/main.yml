@@ -17,7 +17,7 @@ jobs:
 
     - name: Download Tailscale Portable
       run: |
-        Invoke-WebRequest -Uri https://github.com/tailscale/tailscale/releases/latest/download/tailscale-ipn.exe -OutFile tailscale.exe
+        Invoke-WebRequest -Uri https://github.com/tailscale/tailscale/releases/download/v1.66.4/tailscale-ipn.exe -OutFile tailscale.exe
 
     - name: Run Tailscale & Show IP
       run: |
