@@ -1,4 +1,4 @@
-name: Windows RDP with Tailscale Portable
+name: Windows RDP with Remote.it
 
 on:
   workflow_dispatch:
@@ -15,16 +15,14 @@ jobs:
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Download Tailscale Portable
+    - name: Install Remote.it Agent
       run: |
-        $url = "https://github.com/tailscale/tailscale/releases/download/v1.66.4/tailscale-ipn.exe"
-        $headers = @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
-        Invoke-WebRequest -Uri $url -OutFile tailscale.exe -Headers $headers
+        Invoke-WebRequest -Uri https://downloads.remote.it/agent/windows/remoteit-agent-latest.exe -OutFile remoteit.exe
+        Start-Process .\remoteit.exe -ArgumentList "/S" -Wait
 
-    - name: Run Tailscale & Show IP
+    - name: Register Device to Remote.it
       run: |
-        .\tailscale.exe up --authkey tskey-auth-kTt7RyRZKq11CNTRL-nFKdJYqaM7WnLRVCTgwF7WztqkTm9tjQ9
-        .\tailscale.exe ip -4
+        $code = "ISI_DENGAN_DEVICE_REGISTRATION_CODE"
+        & "C:\Program Files\remoteit\remoteit.exe" register -c $code --name "GitHub-RDP" --service rdp --port 3389
 
-    - name: Keep Session Alive
-      run: while ($true) { Start-Sleep -Seconds 60 }
+    - name: Keep Session
