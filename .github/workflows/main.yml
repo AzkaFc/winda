@@ -17,8 +17,8 @@ jobs:
 
     - name: Download Tailscale Portable
       run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
-        Expand-Archive -Path tailscale.exe -DestinationPath tailscale_files -Force
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale_1.66.4_windows_amd64.zip -OutFile tailscale.zip
+        Expand-Archive -Path tailscale.zip -DestinationPath tailscale_files -Force
 
     - name: Run Tailscale & Show IP
       run: |
