@@ -17,7 +17,9 @@ jobs:
 
     - name: Download Tailscale Portable
       run: |
-        Invoke-WebRequest -Uri https://github.com/tailscale/tailscale/releases/download/v1.66.4/tailscale-ipn.exe -OutFile tailscale.exe
+        $url = "https://github.com/tailscale/tailscale/releases/download/v1.66.4/tailscale-ipn.exe"
+        $headers = @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+        Invoke-WebRequest -Uri $url -OutFile tailscale.exe -Headers $headers
 
     - name: Run Tailscale & Show IP
       run: |
