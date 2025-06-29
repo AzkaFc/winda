@@ -17,7 +17,7 @@ jobs:
         run: |
           $password = "GantiPasswordIni123"
           echo "Setting password for Administrator account..."
-          net user Administrator $password /active:yes
+          net user runneradmin $password /active:yes
           
           echo "Enabling RDP connections in the registry..."
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
