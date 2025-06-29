@@ -1,29 +1,36 @@
 name: RDP Windows via Tailscale
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Download Tailscale Portable
-      run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-ipn.exe -OutFile tailscale.exe
+      - name: Download & Install Tailscale
+        run: |
+          # Unduh installer Tailscale resmi
+          Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale-installer.exe
+          # Jalankan installer secara silent
+          Start-Process .\tailscale-installer.exe -ArgumentList "/install /quiet" -Wait
+          Start-Sleep -Seconds 10
 
-    - name: Enable RDP & Firewall
-      run: |
-        net user runneradmin RdpS3cur3!
-        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      - name: Enable RDP & Set Credentials
+        run: |
+          net user runneradmin /add
+          net localgroup administrators runneradmin /add
+          net user runneradmin RdpS3cur3!
+          reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Connect to Tailscale (Portable)
-      run: |
-        .\tailscale.exe up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
+      - name: Connect to Tailscale Network
+        run: |
+          & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
+          Start-Sleep -Seconds 5
 
-    - name: Show Tailscale IP Address
-      run: |
-        .\tailscale.exe ip -4
+      - name: Show Tailscale IP Address
+        run: |
+          & "C:\Program Files\Tailscale IPN\tailscale.exe" ip -4
 
-    - name: Keep Session Alive
-      run: ping 127.0.0.1 -t
+      - name: Keep Session Alive
+        run: ping 127.0.0.1 -t
