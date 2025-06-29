@@ -1,4 +1,4 @@
-name: RDP Windows via LocalTunnel
+name: RDP Windows via Tailscale
 
 on: workflow_dispatch
 
@@ -7,20 +7,24 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Setup LocalTunnel & Enable RDP
+    - name: Download & Install Tailscale
       run: |
-        npm install -g localtunnel
-        net user runneradmin Unixs@rtmedi4
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
+        Start-Process .\tailscale.exe -ArgumentList "/install /quiet" -Wait
+
+    - name: Enable RDP & Firewall
+      run: |
+        net user runneradmin RdpS3cur3!
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Start-Process "cmd.exe" -ArgumentList "/c lt --port 3389 --subdomain adhyrdp > tunnel.log"
-        Start-Sleep -Seconds 10
-        Get-Content tunnel.log
+
+    - name: Connect to Tailscale Network
+      run: |
+        & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5  --hostname kangadhyrdp
+
+    - name: Show Tailscale IP Address
+      run: |
+        & "C:\Program Files\Tailscale IPN\tailscale.exe" ip -4
 
     - name: Keep Session Alive
-      run: ping adhyrdp.loca.lt -t
+      run: ping 127.0.0.1 -t
