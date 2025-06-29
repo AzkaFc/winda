@@ -13,18 +13,29 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up user and enable RDP
+        shell: powershell
         run: |
-          echo "Membuat pengguna..."
-          net user runneradmin "GantiPasswordIni123" /active:yes
-          echo "Mengaktifkan RDP..."
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          $password = "GantiPasswordIni123"
+          echo "Setting password for Administrator account..."
+          net user Administrator $password /active:yes
+          
+          echo "Enabling RDP connections in the registry..."
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+          
+          echo "Enabling Remote Desktop firewall rule..."
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          
+          echo "RDP setup complete."
 
       # --- BAGIAN YANG DIPERBARUI ---
       - name: Install and Run Tailscale (Metode Winget)
         run: |
-          echo "Menginstal Tailscale menggunakan winget (manajer paket Windows)..."
-          winget install --id Tailscale.Tailscale -e --accept-source-agreements --accept-package-agreements
+          echo "Menginstal Tailscale menggunakan winget (dengan path lengkap)..."
+          # Menentukan path lengkap ke winget.exe karena terkadang tidak ada di sistem PATH
+          $wingetPath = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
+          
+          # Menjalankan perintah winget menggunakan path lengkap
+          & $wingetPath install --id Tailscale.Tailscale -e --accept-source-agreements --accept-package-agreements
           
           echo "Menjalankan Tailscale dan menghubungkan ke jaringan..."
           & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=github-windows
