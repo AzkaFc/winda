@@ -12,7 +12,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- USERNAME DAN PASSWORD SUDAH DIUBAH ---
       - name: Set up user and enable RDP
         shell: powershell
         run: |
@@ -27,17 +26,14 @@ jobs:
           
           echo "RDP setup complete."
 
-      # --- METODE INSTALASI DIGANTI KE UNDUHAN LANGSUNG (LEBIH STABIL) ---
-      - name: Install and Run Tailscale (Direct Download Method)
+      # --- METODE INSTALASI FINAL MENGGUNAKAN CHOCOLATEY ---
+      - name: Install and Run Tailscale (Chocolatey Method)
         run: |
-          echo "Downloading stable Tailscale installer..."
-          $installerUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-stable.exe"
-          Invoke-WebRequest -Uri $installerUrl -OutFile "tailscale-setup.exe"
-          
-          echo "Installing Tailscale silently..."
-          Start-Process ".\tailscale-setup.exe" -ArgumentList "/S" -Wait
+          echo "Installing Tailscale using Chocolatey package manager..."
+          choco install tailscale -y --force
           
           echo "Connecting Tailscale to network..."
+          # Lokasi instalasi dari choco biasanya sama
           & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=github-windows
 
       - name: Show Tailscale IP Address
