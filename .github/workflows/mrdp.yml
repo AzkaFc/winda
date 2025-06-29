@@ -15,7 +15,7 @@ jobs:
       - name: Set up user and enable RDP
         run: |
           echo "Membuat pengguna..."
-          net user Administrator "GantiPasswordIni123" /active:yes
+          net user runneradmin "GantiPasswordIni123" /active:yes
           echo "Mengaktifkan RDP..."
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
