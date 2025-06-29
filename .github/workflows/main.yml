@@ -7,11 +7,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Download & Install Tailscale
+    - name: Download Tailscale Portable
       run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale-installer.exe
-        Start-Process .\tailscale-installer.exe -ArgumentList "/install /quiet" -Wait
-        Start-Sleep -Seconds 10
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-ipn.exe -OutFile tailscale.exe
 
     - name: Enable RDP & Firewall
       run: |
@@ -19,17 +17,13 @@ jobs:
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Add Tailscale to PATH
-      run: $env:Path += ";C:\Program Files\Tailscale IPN"
-
-    - name: Connect to Tailscale Network
+    - name: Connect to Tailscale (Portable)
       run: |
-        & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
-        Start-Sleep -Seconds 5
+        .\tailscale.exe up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
 
     - name: Show Tailscale IP Address
       run: |
-        & "C:\Program Files\Tailscale IPN\tailscale.exe" ip -4
+        .\tailscale.exe ip -4
 
     - name: Keep Session Alive
       run: ping 127.0.0.1 -t
