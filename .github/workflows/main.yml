@@ -7,30 +7,27 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Download & Install Tailscale
+      - name: Install Tailscale
         run: |
-          # Unduh installer Tailscale resmi
           Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale-installer.exe
-          # Jalankan installer secara silent
           Start-Process .\tailscale-installer.exe -ArgumentList "/install /quiet" -Wait
           Start-Sleep -Seconds 10
 
-      - name: Enable RDP & Set Credentials
+      - name: Enable RDP
         run: |
-          net user runneradmin /add
-          net localgroup administrators runneradmin /add
           net user runneradmin RdpS3cur3!
           reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Connect to Tailscale Network
+      - name: Connect to Tailscale
         run: |
-          & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
+          $tailscale = "${env:ProgramFiles(x86)}\Tailscale IPN\tailscale.exe"
+          if (-Not (Test-Path $tailscale)) {
+              $tailscale = "${env:ProgramFiles}\Tailscale IPN\tailscale.exe"
+          }
+          & $tailscale up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname githubrdp
           Start-Sleep -Seconds 5
+          & $tailscale ip -4
 
-      - name: Show Tailscale IP Address
-        run: |
-          & "C:\Program Files\Tailscale IPN\tailscale.exe" ip -4
-
-      - name: Keep Session Alive
+      - name: Keep Session
         run: ping 127.0.0.1 -t
