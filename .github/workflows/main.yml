@@ -1,33 +1,38 @@
 name: RDP Windows via Tailscale
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - name: Install Tailscale
-        run: |
-          Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale-installer.exe
-          Start-Process .\tailscale-installer.exe -ArgumentList "/install /quiet" -Wait
-          Start-Sleep -Seconds 10
+    - name: Download & Install Tailscale
+      run: |
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
+        Start-Process .\tailscale.exe -ArgumentList "/install /quiet" -Wait
 
-      - name: Enable RDP
-        run: |
-          net user runneradmin RdpS3cur3!
-          reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    - name: Enable RDP & Firewall
+      run: |
+        net user runneradmin RdpS3cur3!
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Connect to Tailscale
-        run: |
-          $tailscale = "${env:ProgramFiles(x86)}\Tailscale IPN\tailscale.exe"
-          if (-Not (Test-Path $tailscale)) {
-              $tailscale = "${env:ProgramFiles}\Tailscale IPN\tailscale.exe"
-          }
-          & $tailscale up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname githubrdp
-          Start-Sleep -Seconds 5
-          & $tailscale ip -4
+    - name: Connect to Tailscale Network
+      run: |
+        $tailscale = "${env:ProgramFiles(x86)}\Tailscale\tailscale.exe"
+        if (-Not (Test-Path $tailscale)) {
+          $tailscale = "${env:ProgramFiles}\Tailscale\tailscale.exe"
+        }
+        & $tailscale up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
 
-      - name: Keep Session
-        run: ping 127.0.0.1 -t
+    - name: Show Tailscale IP Address
+      run: |
+        $tailscale = "${env:ProgramFiles(x86)}\Tailscale\tailscale.exe"
+        if (-Not (Test-Path $tailscale)) {
+          $tailscale = "${env:ProgramFiles}\Tailscale\tailscale.exe"
+        }
+        & $tailscale ip -4
+
+    - name: Keep Session Alive
+      run: ping 127.0.0.1 -t
