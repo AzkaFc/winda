@@ -24,7 +24,7 @@ jobs:
         if (-Not (Test-Path $tailscale)) {
           $tailscale = "${env:ProgramFiles}\Tailscale\tailscale.exe"
         }
-        & $tailscale up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
+        & $tailscale up --authkey tskey-auth-kvuTkMJ7u121CNTRL-iNMfYmvKgoTxWqNvCv6EpTLV5soe5J6oc --hostname kangadhyrdp
 
     - name: Show Tailscale IP Address
       run: |
