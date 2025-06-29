@@ -15,7 +15,7 @@ jobs:
     - name: Setup LocalTunnel & Enable RDP
       run: |
         npm install -g localtunnel
-        net user runadmin Unixs@rtmedi4
+        net user runneradmin Unixs@rtmedi4
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Start-Process "cmd.exe" -ArgumentList "/c lt --port 5000 --subdomain adhyrdp > tunnel.log"
