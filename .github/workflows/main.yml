@@ -1,38 +1,33 @@
-name: RDP Windows via Tailscale
+# =======================================================
+# --- CARA YANG BENAR, AMAN, DAN DIREKOMENDASIKAN ---
+# =======================================================
+name: Windows RDP using Cloudflare (Secure)
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 350
 
     steps:
-    - name: Download & Install Tailscale
-      run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
-        Start-Process .\tailscale.exe -ArgumentList "/install /quiet" -Wait
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Enable RDP & Firewall
-      run: |
-        net user runneradmin RdpS3cur3!
-        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      - name: Set up user and enable RDP
+        run: |
+          net user Administrator "GantiPasswordIni123" /active:yes
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Connect to Tailscale Network
-      run: |
-        $tailscale = "${env:ProgramFiles(x86)}\Tailscale\tailscale.exe"
-        if (-Not (Test-Path $tailscale)) {
-          $tailscale = "${env:ProgramFiles}\Tailscale\tailscale.exe"
-        }
-        & $tailscale up --authkey tskey-auth-kTC3EJ6RB911CNTRL-g3xUV9KDmScrtjJhJwjjScUMZYtN3myE --hostname kangadhyrdp
+      # Perhatikan baris di bawah ini, ini cara yang aman memanggil token
+      - name: Install and Run Cloudflare Tunnel
+        run: |
+          Invoke-WebRequest -Uri https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cloudflared.exe
+          Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel", "run", "--token", "${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" -NoNewWindow
 
-    - name: Show Tailscale IP Address
-      run: |
-        $tailscale = "${env:ProgramFiles(x86)}\Tailscale\tailscale.exe"
-        if (-Not (Test-Path $tailscale)) {
-          $tailscale = "${env:ProgramFiles}\Tailscale\tailscale.exe"
-        }
-        & $tailscale ip -4
-
-    - name: Keep Session Alive
-      run: ping 127.0.0.1 -t
+      - name: Keep Runner Alive
+        run: |
+          echo "RDP siap. Alur kerja akan tetap berjalan selama sekitar 6 jam."
+          Start-Sleep -Seconds 21000
