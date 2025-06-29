@@ -9,8 +9,9 @@ jobs:
     steps:
     - name: Download & Install Tailscale
       run: |
-        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale.exe
-        Start-Process .\tailscale.exe -ArgumentList "/install /quiet" -Wait
+        Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-1.66.4.exe -OutFile tailscale-installer.exe
+        Start-Process .\tailscale-installer.exe -ArgumentList "/install /quiet" -Wait
+        Start-Sleep -Seconds 10
 
     - name: Enable RDP & Firewall
       run: |
@@ -18,9 +19,13 @@ jobs:
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
+    - name: Add Tailscale to PATH
+      run: $env:Path += ";C:\Program Files\Tailscale IPN"
+
     - name: Connect to Tailscale Network
       run: |
-        & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5  --hostname kangadhyrdp
+        & "C:\Program Files\Tailscale IPN\tailscale.exe" up --authkey tskey-auth-khSHaL1irJ11CNTRL-2DNyUHjZ545zna2iX5as3547ur4dwCu5 --hostname kangadhyrdp
+        Start-Sleep -Seconds 5
 
     - name: Show Tailscale IP Address
       run: |
