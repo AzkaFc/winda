@@ -18,9 +18,9 @@ jobs:
         net user runneradmin Unixs@rtmedi4
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Start-Process "cmd.exe" -ArgumentList "/c lt --port 5000 --subdomain adhyrdp > tunnel.log"
+        Start-Process "cmd.exe" -ArgumentList "/c lt --port 3389 --subdomain adhyrdp > tunnel.log"
         Start-Sleep -Seconds 10
         Get-Content tunnel.log
 
     - name: Keep Session Alive
-      run: ping 127.0.0.1 -t
+      run: ping adhyrdp.loca.lt -t
