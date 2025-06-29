@@ -1,0 +1,41 @@
+name: Windows RDP using Tailscale
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up user and enable RDP
+        run: |
+          echo "Membuat pengguna..."
+          net user runneradmin "GantiPasswordIni123" /active:yes
+          echo "Mengaktifkan RDP..."
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+      - name: Install and Run Tailscale
+        run: |
+          echo "Mengunduh dan menginstal Tailscale..."
+          Invoke-WebRequest -Uri https://pkgs.tailscale.com/stable/tailscale-setup-stable-1.0.0.exe -OutFile tailscale-setup.exe
+          start-process ".\tailscale-setup.exe" -argumentlist "/S" -wait
+          echo "Menjalankan Tailscale dan menghubungkan ke jaringan..."
+          & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=github-windows
+
+      - name: Show Tailscale IP Address
+        run: |
+          echo "Menunggu alamat IP Tailscale..."
+          Start-Sleep -Seconds 10
+          echo "Alamat IP Tailscale untuk mesin ini adalah:"
+          & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+
+      - name: Keep Runner Alive
+        run: |
+          echo "RDP siap. Alur kerja akan tetap berjalan. Gunakan alamat IP Tailscale dari langkah sebelumnya untuk terhubung."
+          Start-Sleep -Seconds 21000
