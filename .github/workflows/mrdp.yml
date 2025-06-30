@@ -46,4 +46,4 @@ jobs:
       - name: Keep Runner Alive
         run: |
           echo "RDP is ready. The workflow will stay alive. Use the Tailscale IP from the previous step to connect."
-          Start-Sleep -Seconds 21000
+          Start-Sleep -Seconds 43000
